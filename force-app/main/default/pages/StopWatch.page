@@ -1,0 +1,138 @@
+<apex:page title="ストップウォッチ" controller="StopWatchController" lightningStylesheets="true">
+    <apex:includeScript value="{!$Resource.jQuery}"/>
+    <style type="text/css">
+        div { 
+        	margin : 5px ;
+        	padding : 2px ;
+        }
+        .main {
+        	width: 100%;
+        	height: 100%;
+        }
+        #timeCount { font-size: 20px; }
+        
+    </style>
+    
+    <script>
+    	let stopWatchId;			//開始したストップウォッチ特定
+    	let isProccesStart = false	//ストップウォッチ開始済みか
+        let isProccesing = false;	//ストップウォッチ動作中か
+    	let isReset = false;		//ストップウォッチリセット済みか
+    	let time = 0;				//ストップウォッチ経過時間（時間型ではない）
+    
+    	//ストップウォッチ開始後1秒毎に実行
+        function setTime(){
+            time++;
+            let hh = ( '00' + Math.floor(time / 3600) ).slice( -2 );
+            let mm = ( '00' + Math.floor(time / 60) ).slice( -2 );
+            let ss = ( '00' + Math.floor(time % 60) ).slice( -2 );
+            document.getElementById("timeCount").innerHTML = hh+":"+mm+":"+ss;	//画面の経過時間を更新
+        }
+        
+    	//ストップウォッチ開始
+        function startClick(){
+            stopWatchId = setInterval(setTime, 1000);
+            isProccesStart = true;
+            isProccesing = true;
+            isReset = false;
+            //スタート／ストップボタン表示切り替え
+            document.getElementById("startButton").style.display="none";
+            document.getElementById("stopButton").style.display="";
+        }
+    
+    //ストップウォッチ停止
+        function stopClick(){
+            clearInterval(stopWatchId);
+            isProccesing = false;
+            $('input[id$=":calculateTime"]').val(Math.floor(time /60));	//ラップを保持
+            //スタート／ストップボタン表示切り替え
+            document.getElementById("startButton").style.display="";
+            document.getElementById("stopButton").style.display="none";
+        }
+    
+    	//ストップウォッチリセット
+        function resetClick(){
+            clearInterval(stopWatchId);
+            isProccesing = false;
+            isReset = true;
+            time = 0;
+            document.getElementById("timeCount").innerHTML = "00:00:00";	//画面の経過時間を更新
+            //スタート／ストップボタン表示切り替え
+            document.getElementById("startButton").style.display="";
+            document.getElementById("stopButton").style.display="none";
+        }
+    
+    	//登録
+        function registerClick(){
+            submitForButton();
+            //ストップウォッチを一度も開始していなければ
+            if(!isProccesStart){
+                alert("ストップウォッチを使用していないので登録できません。");
+                return false;
+            }
+            //ストップウォッチを停止していなければ
+            if(isProccesing){
+                alert("ストップウォッチが動いているので登録できません。");
+                return false;
+            }
+            //ストップウォッチをリセットしたら
+            if(isReset){
+                alert("状態がリセットされているので登録できません。");
+                return false;
+            }
+            //チェックOKなら
+            if(confirm("データを登録します。よろしいですか。")){
+                register();
+            }else{
+                return false;
+            }
+        }
+    
+    	//サブミットによる画面の更新を停止
+        function submitForButton(){
+            elmSubmit = $('input[type="submit"]'); 
+            for(elm=0;elm<elmSubmit.length;elm++){
+                elmSubmit[elm].type = "button";
+            }
+        }
+    
+    </script>
+    <div class="main" >
+        <apex:form >
+            <div>
+                <div id="timeCount">00:00:00</div>
+                <apex:inputHidden id="calculateTime" value="{!calculateTime}" />     
+                <input type="button" id="startButton" value="スタート" onclick="startClick();" />
+                <input type="button" id="stopButton" value="ストップ" onclick="stopClick();" style="display:none;" />
+                <input type="button" value="リセット" onclick="resetClick();" />
+            </div>
+            <div>
+                <apex:outputPanel id="inputPanel">
+                    <div>
+                        <table>
+                            <tr>
+                                <td>作業内容</td>
+                                <td>
+                                    <apex:inputTextarea value="{!workingWach.Content__c}" html-maxlength="255" cols="36" rows="5" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>関連先</td>
+                                <td>
+                                    <apex:selectList value="{!workingWach.Opportunity__c}" size="1">
+                                        <apex:selectOptions value="{!opportunitySelectOptions}"/>
+                                    </apex:selectList>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div>
+                        <apex:commandButton value="登録" onclick="registerClick();" />
+                        <apex:actionFunction name="register" action="{!register}" reRender="inputPanel" />
+                        <apex:outputText id="resultMessage" value="{!resultMessage}" />
+                    </div>
+                </apex:outputPanel>
+            </div>
+        </apex:form>
+    </div>  
+</apex:page>

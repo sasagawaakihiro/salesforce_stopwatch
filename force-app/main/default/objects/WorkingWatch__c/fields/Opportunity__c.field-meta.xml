@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Opportunity__c</fullName>
+    <externalId>false</externalId>
+    <inlineHelpText>作業時間を紐付ける商談を選択します。</inlineHelpText>
+    <label>商談</label>
+    <referenceTo>Opportunity</referenceTo>
+    <relationshipLabel>作業時間</relationshipLabel>
+    <relationshipName>Opportunity</relationshipName>
+    <relationshipOrder>0</relationshipOrder>
+    <reparentableMasterDetail>false</reparentableMasterDetail>
+    <trackTrending>false</trackTrending>
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+</CustomField>
